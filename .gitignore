@@ -69,4 +69,7 @@ venv
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+
+#IDEs
 .vscode
+.idea

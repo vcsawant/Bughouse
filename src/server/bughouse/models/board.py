@@ -1,7 +1,10 @@
 import chess
+from bughouse import db
 
 
 class Board:
+    id = db.Column(db.Integer, primary_key=True)
+
     def __init__(self, identifier):
         self.board = chess.Board()
         self.identifier = identifier
