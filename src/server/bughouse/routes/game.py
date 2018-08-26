@@ -1,29 +1,14 @@
+from bughouse.models import Board, Game, GameDatabase
 import chess
-from chess import Move
-from bughouse import app
 from flask import request, Response
 import logging
+from bughouse import app
+import string
+import random
 
 LOGGER = logging.getLogger(__name__)
 
-
-class Board:
-    def __init__(self, identifier):
-        self.board = chess.Board()
-        self.identifier = identifier
-        self.placeable_white = [0, 0, 0, 0, 0]
-        self.placeable_black = [0, 0, 0, 0, 0]
-
-    def validate_move(self, move):
-        # TODO: complete definition
-        return True
-
-    def move(self, move):
-        self.board.push(move)
-
-
-board_a = Board("A")
-board_b = Board("B")
+gameDB = GameDatabase()
 
 
 def parse_move(dict):
@@ -35,14 +20,14 @@ def parse_move(dict):
     drop = int(drop) if drop is not None else None
     promotion = dict.get('promotion')
 
-    move = Move(from_square=from_square, to_square=to_square,
-                promotion=promotion, drop=drop)
+    move = chess.Move(from_square=from_square, to_square=to_square,
+                      promotion=promotion, drop=drop)
     return move
 
 
 def push_move_and_validate(move, board):
     move = parse_move(request.form.to_dict())
-    if move == Move.null():
+    if move == chess.Move.null():
         return Response("Null Move", status=400)
 
     if not board.validate_move(move):
@@ -54,19 +39,33 @@ def push_move_and_validate(move, board):
     return Response(status=204)
 
 
-@app.route("/game/move-a/", methods=["POST"])
-def move_a():
+@app.route("/game/<gameid>/move-a/", methods=["POST"])
+def move_a(gameid):
     move = parse_move(request.form.to_dict())
-    return push_move_and_validate(move, board_a)
+    game = gameDB.lookup(gameid)
+    return push_move_and_validate(move, game.board_a)
 
 
-@app.route("/game/move-b/", methods=["POST"])
-def move_b():
+@app.route("/game/<gameid>/move-b/", methods=["POST"])
+def move_b(gameid):
     move = parse_move(request.form.to_dict())
-    return push_move_and_validate(move, board_b)
+    game = gameDB.lookup(gameid)
+    return push_move_and_validate(move, game.board_b)
 
 
-@app.route("/game/view")
-def view():
+@app.route("/game/view/<gameid>")
+def view(gameid):
     LOGGER.info("viewing board")
-    return board_a.board.fen() + " and " + board_b.board.fen()
+    game = gameDB.lookup(gameid)
+    return game.board_a.board.fen() + " and " + game.board_b.board.fen()
+
+
+@app.route("/game/create", methods=["POST"])
+def create_game():
+    gameid = ''.join(random.choice(string.ascii_letters + string.digits)
+                     for i in range(6))
+    # TODO: ensure unique id
+    game = Game(gameid)
+    gameDB.addGame(game)
+
+    return Response(gameid, status=200)
