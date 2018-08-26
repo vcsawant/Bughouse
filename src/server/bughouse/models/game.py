@@ -4,18 +4,27 @@ from bughouse.models.player import Player
 from bughouse import db
 from flask import request, Response
 import logging
+import datetime
 
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Game(db.Model):
-    identifier = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    board_a_id = db.Column(
+        db.Integer,  db.ForeignKey('board.id'), nullable=False)
+    board_b_id = db.Column(
+        db.Integer, db.ForeignKey('board.id'), nullable=False)
+    player_white_a_id = db.Column(db.String(80), db.ForeignKey('player.id'))
+    player_white_b_id = db.Column(db.String(80), db.ForeignKey('player.id'))
+    player_black_a_id = db.Column(db.String(80), db.ForeignKey('player.id'))
+    player_black_b_id = db.Column(db.String(80), db.ForeignKey('player.id'))
+    date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    result = db.Column(db.Integer)
 
     def __init__(self, identifier):
-        self.identifier = identifier
-        self.board_a = Board(identifier+"_A")
-        self.board_b = Board(identifier+"_B")
+        self.id = identifier
         self.player_white_a = None
         self.player_white_b = None
         self.player_black_a = None
