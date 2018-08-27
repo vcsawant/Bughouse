@@ -6,7 +6,7 @@ from flask_marshmallow import Marshmallow
 app = Flask(__name__, static_folder="../../static/dist",
             template_folder="../../static")
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.DB_URI
-
+app.config['SQLALCHEMY_ECHO'] = settings.SQLALCHEMY_ECHO
 
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
