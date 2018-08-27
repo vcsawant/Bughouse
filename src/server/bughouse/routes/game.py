@@ -8,15 +8,15 @@ from bughouse import app, db
 LOGGER = logging.getLogger(__name__)
 
 
-def parse_move(dict):
-    from_square = dict.get('from_square')
+def parse_move(move_dict):
+    from_square = move_dict.get('from_square')
     from_square = int(from_square) if from_square is not None else None
-    to_square = dict.get('to_square')
+    to_square = move_dict.get('to_square')
     to_square = int(to_square) if to_square is not None else None
-    drop = dict.get('drop')
+    drop = move_dict.get('drop')
     drop = int(drop) if drop is not None else None
-    promotion = dict.get('promotion')
-    board_code = dict.get('board')
+    promotion = move_dict.get('promotion')
+    board_code = move_dict.get('board')
 
     move = chess.Move(from_square=from_square, to_square=to_square,
                       promotion=promotion, drop=drop)
@@ -67,7 +67,7 @@ def create_game():
 
 
 @app.route("/game/view")
-def view_all():
+def view_all_games():
     LOGGER.info("viewing all games")
     games = Game.query.all()
     return jsonify(GameSchema(many=True).dump(games).data)
