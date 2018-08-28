@@ -7,6 +7,7 @@ from bughouse.models.player import Player
 from bughouse import db
 import logging
 import datetime
+import bughouse.constants as constants
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,34 +41,48 @@ class Game(db.Model):
         self.board_b_id = self.board_b.id
 
     def add_player(self, player, position):
-        if position == 0:
+        # TODO handle adding a player to position where there is already a player
+        if position == constants.PositionCode.WHITE_A.value:
+            LOGGER.debug("Adding player to white a: " + player.id)
             self.player_white_a = player
-            self.player_white_a_id = player.id
-        elif position == 1:
-            self.player_black_a = player
+        elif position == constants.PositionCode.BLACK_A.value:
+            LOGGER.debug("Adding player to black a: " + player.id)
             self.player_black_a_id = player.id
-        elif position == 2:
+        elif position == constants.PositionCode.WHITE_B.value:
+            LOGGER.debug("Adding player to white b: " + player.id)
             self.player_white_b = player
             self.player_white_b_id = player.id
-        elif position == 3:
-            self.player_black_b = player
+        elif position == constants.PositionCode.BLACK_B.value:
+            LOGGER.debug("Adding player to black b: " + player.id)
             self.player_black_b_id = player.id
+            self.player_black_b = player
 
     def finish_game(self, result_code):
-        winners = [self.player_white_a, self.player_black_a] if result_code == 0 else [
-            self.player_white_b, self.player_black_b]
-        losers = [self.player_white_a, self.player_black_a] if result_code == 1 else [
-            self.player_white_b, self.player_black_b]
+
+        team_a = []
+        team_b = []
+        team_a.append(self.player_white_a)
+        team_a.append(self.player_black_a)
+        team_b.append(self.player_white_b)
+        team_b.append(self.player_black_b)
+
+        if result_code == constants.GameResult.WHITE_WIN:
+            winners = team_a
+            losers = team_b
+        else:
+            winners = team_b
+            losers = team_a
+
         self.result = result_code
         for player in winners:
-            p.update_player_result(player.id, Result.WIN)
+            player.update_result(constants.PlayerResult.WIN)
         for player in losers:
-            p.update_player_result(player.id, Result.LOSS)
+            player.update_result(constants.PlayerResult.LOSS)
 
         # TODO: handle draw or other result codes in future
 
     def make_move(self, custom_move):
-        if custom_move.board_code == 0:
+        if custom_move.board_code == constants.BoardCode.BOARD_A:
             self.board_a.move(custom_move.move)
         else:
             self.board_b.move(custom_move.move)
@@ -79,31 +94,9 @@ class Game(db.Model):
             return self.board_b.validate_move(custom_move.move)
 
 
-def add_player_and_update(game_id, player, position):
-    game = Game.query.get(game_id)
-    game.add_player(player, position)
-
-
-def finish_game_and_update(gameid, result_code):
-    game = Game.query.get(gameid)
-    game.finish_game(result_code)
-
-
-def make_move_and_update(game_id, custom_move):
-    game = Game.query.get(game_id)
-    game.make_move(custom_move)
-
-
 class GameSchema(ModelSchema):
     class Meta:
         model = Game
-
-
-class Result(Enum):
-    WIN = 0
-    LOSS = 1
-    DRAW = 2
-    IN_PROGRESS = None
 
 
 class CustomMove:
