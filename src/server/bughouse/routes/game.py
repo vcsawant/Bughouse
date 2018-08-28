@@ -4,10 +4,12 @@ import chess
 import bughouse.utils as utils
 from flask import request, make_response, jsonify
 import logging
-from bughouse import app, db
+from bughouse import app, db, socketio
 import sys
+from flask_socketio import join_room, leave_room
 
 LOGGER = logging.getLogger(__name__)
+GAME_NAMESPACE = "/game"
 
 
 def parse_move(move_form):
@@ -84,6 +86,11 @@ def add_player_to_game(game_id):
         LOGGER.error("Error committing updated player: " + sys.exc_info()[0])
         raise
 
+    try:
+        join_room(room=game_id, namespace=GAME_NAMESPACE, sid=player_id)
+    except Exception:
+        LOGGER.exception("error joining game room")
+        return make_response("Unable to join game", 505)
     return make_response("Joined game " + str(utils.game_schema.dump(game).data), 200)
 
 

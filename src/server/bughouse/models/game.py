@@ -44,18 +44,16 @@ class Game(db.Model):
         # TODO handle adding a player to position where there is already a player
         if position == constants.PositionCode.WHITE_A.value:
             LOGGER.debug("Adding player to white a: " + player.id)
-            self.player_white_a = player
+            self.player_white_a_id = player.id
         elif position == constants.PositionCode.BLACK_A.value:
             LOGGER.debug("Adding player to black a: " + player.id)
             self.player_black_a_id = player.id
         elif position == constants.PositionCode.WHITE_B.value:
             LOGGER.debug("Adding player to white b: " + player.id)
-            self.player_white_b = player
             self.player_white_b_id = player.id
         elif position == constants.PositionCode.BLACK_B.value:
             LOGGER.debug("Adding player to black b: " + player.id)
             self.player_black_b_id = player.id
-            self.player_black_b = player
 
     def finish_game(self, result_code):
 
