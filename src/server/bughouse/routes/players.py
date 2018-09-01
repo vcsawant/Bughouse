@@ -6,34 +6,9 @@ from flask import request, make_response, jsonify
 import sys
 import bughouse.utils as utils
 from sqlalchemy.exc import IntegrityError
+import bughouse.settings as settings
 
 LOGGER = logging.getLogger(__name__)
-
-
-@app.route("/player/create", methods=["POST"])
-def create_player():
-    player_id = request.form['id']
-    elo = 1200
-    try:
-        elo = request.form['elo']
-    except KeyError:
-        pass
-    except:
-        LOGGER.error("Unexpected error:", sys.exc_info()[0])
-        return make_response(sys.exc_info()[0], 404)
-
-    player = Player(id=player_id, elo=elo)
-
-    try:
-
-        db.session.add(player)
-        db.session.commit()
-    except IntegrityError:
-        return make_response("player already exists", 404)
-    except:
-        LOGGER.error("Unexpected error:", sys.exc_info()[0])
-        return make_response(sys.exc_info()[0], 404)
-    return make_response(jsonify(PlayerSchema().dump(player).data), 201)
 
 
 @app.route("/player/view/<player_id>")

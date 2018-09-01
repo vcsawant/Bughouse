@@ -1,9 +1,14 @@
 const webpack = require('webpack')
 const config = {
-  entry: __dirname + '/js/index.jsx',
+  entry: {
+    index: __dirname + '/js/index.jsx',
+    login: __dirname + '/js/login.jsx',
+    register: __dirname + '/js/register.jsx',
+    game: __dirname + '/js/game.jsx'
+  },
   output: {
     path: __dirname + '/dist',
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
   },
   resolve: {
     extensions: ['.js', '.jsx', '.css'],
@@ -13,7 +18,11 @@ const config = {
       {
         test: /\.jsx?/,
         exclude: /node_modules/,
-        use: 'babel-loader',
+        loader: 'babel-loader',
+        options:{
+          presets: ['env','react'],
+          plugins: ['transform-class-properties']
+        }
       },
     ],
   },

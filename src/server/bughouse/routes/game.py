@@ -7,6 +7,7 @@ import logging
 from bughouse import app, db, socketio
 import sys
 from flask_socketio import join_room, leave_room
+from flask_login import current_user
 
 LOGGER = logging.getLogger(__name__)
 GAME_NAMESPACE = "/game"
@@ -69,6 +70,7 @@ def create_game():
 @app.route("/game/join/<game_id>", methods=["POST"])
 def add_player_to_game(game_id):
     game = utils.get_game_from_id(game_id)
+    
     player_id = request.form['player_id']
     player = utils.get_player_from_id(player_id)
     position = request.form['position']
