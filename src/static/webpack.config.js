@@ -8,7 +8,7 @@ const config = {
   },
   output: {
     path: __dirname + '/dist',
-    filename: '[name].bundle.js',
+    filename: '[name]-bundle.js',
   },
   resolve: {
     extensions: ['.js', '.jsx', '.css'],
@@ -23,6 +23,10 @@ const config = {
           presets: ['env','react'],
           plugins: ['transform-class-properties']
         }
+      },
+      {
+        test:/\.css$/,
+        use:['style-loader','css-loader']
       },
     ],
   },

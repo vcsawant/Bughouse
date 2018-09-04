@@ -39,12 +39,15 @@
     "babel-preset-latest": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "create-react-class": "^15.6.3",
+    "css-loader": "^1.0.0",
     "formsy-react": "^1.1.4",
-    "material-ui": "^0.20.2",
+    "formsy-react-components": "^1.0.0",
     "prettier": "^1.14.2",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "style-loader": "^0.23.0",
     "webpack": "^4.17.1",
     "webpack-command": "^0.4.1"
-  }
+  },
+  "dependencies": {}
 }

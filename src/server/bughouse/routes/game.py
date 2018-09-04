@@ -7,7 +7,7 @@ import logging
 from bughouse import app, db, socketio
 import sys
 from flask_socketio import join_room, leave_room
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 LOGGER = logging.getLogger(__name__)
 GAME_NAMESPACE = "/game"
@@ -45,6 +45,7 @@ def push_move_and_validate(gameid, custom_move):
 
 
 @app.route("/game/<gameid>/move/", methods=["POST"])
+@login_required
 def move_a(gameid):
     move = parse_move(request.form.to_dict())
     db.session.commit()
@@ -52,6 +53,7 @@ def move_a(gameid):
 
 
 @app.route("/game/view/<gameid>")
+@login_required
 def view(gameid):
     LOGGER.info("viewing board")
     game = utils.get_game_from_id(gameid)
@@ -68,9 +70,10 @@ def create_game():
 
 
 @app.route("/game/join/<game_id>", methods=["POST"])
+@login_required
 def add_player_to_game(game_id):
     game = utils.get_game_from_id(game_id)
-    
+
     player_id = request.form['player_id']
     player = utils.get_player_from_id(player_id)
     position = request.form['position']
