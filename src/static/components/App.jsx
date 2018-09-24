@@ -1,6 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import GamesView from './GamesView'
+import gameSocket from './SocketConnection'
 
 export default class App extends React.Component {
   constructor(props) {
@@ -23,7 +24,7 @@ export default class App extends React.Component {
     })
   }
 
-  handleViewGamesClick = () => {
+  refreshGamesState(){
     axios.get('/game/view').then((response) => {
       this.setState({
         games: response.data,
@@ -33,12 +34,24 @@ export default class App extends React.Component {
     })
   }
 
+  handleViewGamesClick = () => {
+    this.openSocket()
+    this.refreshGamesState()
+  }
+
   handleCreateGameClick = () => {
     axios.post('/game/create').then((response) => {
       alert("created game " + response.data)
     }).catch((err) => {
       alert(err.response.data)
     })
+  }
+
+  openSocket = () => {
+    if (gameSocket.connected){
+      return gameSocket
+    }
+    return gameSocket.open()
   }
 
   render() {

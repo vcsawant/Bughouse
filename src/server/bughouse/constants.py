@@ -12,10 +12,13 @@ class BoardCode(Enum):
     BOARD_B = "board_b"
 
 
-class GameResult(Enum):
-    WHITE_WIN = 0
-    BLACK_WIN = 1
-    DRAW = 2
+class GameStatus(Enum):
+    WAITING_FOR_PLAYERS = 0
+    READY_TO_START = 1
+    IN_PROGRESS = 2
+    WHITE_WIN = 3
+    BLACK_WIN = 4
+    DRAW = 5
 
 
 class PositionCode(Enum):

@@ -40,11 +40,11 @@
     "babel-preset-react": "^6.24.1",
     "create-react-class": "^15.6.3",
     "css-loader": "^1.0.0",
-    "formsy-react": "^1.1.4",
-    "formsy-react-components": "^1.0.0",
     "prettier": "^1.14.2",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "react-router": "^4.3.1",
+    "socket.io-client": "^2.1.1",
     "style-loader": "^0.23.0",
     "webpack": "^4.17.1",
     "webpack-command": "^0.4.1"

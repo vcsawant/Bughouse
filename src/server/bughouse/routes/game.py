@@ -1,5 +1,5 @@
 from bughouse.models import Game, Player, Board, GameSchema
-from bughouse.models.game import CustomMove
+from bughouse.models.game import BughouseMove
 import chess
 import bughouse.utils as utils
 from flask import request, make_response, jsonify
@@ -13,43 +13,42 @@ LOGGER = logging.getLogger(__name__)
 GAME_NAMESPACE = "/game"
 
 
-def parse_move(move_form):
-    from_square = move_form.get('from_square')
-    from_square = int(from_square) if from_square is not None else None
-    to_square = move_form.get('to_square')
-    to_square = int(to_square) if to_square is not None else None
-    drop = move_form.get('drop')
-    drop = int(drop) if drop is not None else None
-    promotion = move_form.get('promotion')
-    board_code = move_form.get('board')
+def parse_move(move_json):
+    uci = move_json.get('uci', None)
+    board_code = move_json.get('board', None)
+    if (board_code is None) or (uci is None):
+        raise KeyError('missing needed key')
 
-    move = chess.Move(from_square=from_square, to_square=to_square,
-                      promotion=promotion, drop=drop)
-    custom_move = CustomMove(board_code, move)
-    return custom_move
+    move = chess.Move.from_uci(uci)
+    bughouse_move = BughouseMove(board_code, move)
+    return bughouse_move
 
 
-def push_move_and_validate(gameid, custom_move):
+def validate_and_push_move(gameid, move):
     game = utils.get_game_from_id(gameid)
 
-    if custom_move.move == chess.Move.null():
-        return make_response("Null Move", 400)
+    if not game.validate_move(move):
+        raise ValueError('invalid move')
 
-    if not game.validate_move(custom_move):
-        return make_response("Invalid move", 400)
+    game.make_move(move)
+    LOGGER.info("pushed move on board " + str(game.id) + "_" + move.board_code + ": " + move.move.uci())
 
-    game.make_move(custom_move)
-    LOGGER.info("pushed move on board " + str(game.id) + "_" + custom_move.board_code + ": " + custom_move.move.uci())
-
-    return make_response("pushed move", 200)
+    return True
 
 
 @app.route("/game/<gameid>/move/", methods=["POST"])
 @login_required
 def move_a(gameid):
-    move = parse_move(request.form.to_dict())
-    db.session.commit()
-    return push_move_and_validate(gameid, move)
+    try:
+        move = parse_move(request.get_json(force=True))
+        if validate_and_push_move(gameid, move):
+            db.session.commit()
+
+            return make_response('success', 200)
+    except KeyError:
+        LOGGER.exception('error parsing move', exc_info=sys.exc_info())
+    except ValueError:
+        LOGGER.exception('error validating move', exc_info=sys.exc_info())
 
 
 @app.route("/game/view/<gameid>")
@@ -61,6 +60,7 @@ def view(gameid):
 
 
 @app.route("/game/create", methods=["POST"])
+@login_required
 def create_game():
     game = Game()
     db.session.add(game)
@@ -76,7 +76,7 @@ def add_player_to_game(game_id):
 
     player_id = request.form['player_id']
     player = utils.get_player_from_id(player_id)
-    position = request.form['position']
+    position = request.get_json(force=True).get('position', None)
     try:
         game.add_player(player, position)
     except:
@@ -100,6 +100,7 @@ def add_player_to_game(game_id):
 
 
 @app.route("/game/view")
+@login_required
 def view_all_games():
     LOGGER.debug("viewing all games")
     games = Game.query.all()

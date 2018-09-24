@@ -1,70 +1,90 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import axios from 'axios'
-import {Input, Form} from 'formsy-react-components'
-import {addValidationRule} from 'formsy-react'
+import { withRouter } from 'react-router'
 
-addValidationRule('isUnique', function (values, username) {
-  return axios.get('/player/view/'+username).then( (response) => {
-    return false;
-  }).catch( (error) => {
-    return true;
-  })
-});
 
-class RegisterForm extends Component{
+class RegisterForm extends Component {
   isValid = () => {
     this.setState({
-      valid:true
-    });
+      valid: true,
+    })
   }
   isInvalid = () => {
     this.setState({
-      valid:false
-    });
+      valid: false,
+    })
   }
-  submit = (data) => {
-    this.setState({
-      message:JSON.stringify(data)
-    });
+  submit = (event) => {
+    event.preventDefault()
+    let data = {username:this.state.username,password:this.state.password}
     axios.post('/register', data, {
       headers: {
-        'Content-Type': 'application/json'
-      }}).then( (response) => {
-      this.setState({
-        message:response.data.toString()
-      }).catch( (error) => {
-        console.log(error.message)
-      })
-    });
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => {
+      window.location.replace('/login')
+    }).catch((error) => {
+      console.log(error.message)
+    })
   }
 
-  constructor(props){
+  constructor(props) {
     super(props)
-    this.state= {
-      valid:false,
-      message:""
-    };
+    this.state = {
+      username: '',
+      password: '',
+      passConfirm: '',
+      error: {
+        usernameError: '',
+        passwordError: '',
+        passConfirmError: '',
+      },
+    }
   }
 
   render() {
     return (
+      <div className='container'>
+        <div className="jumbotron text-center">
+          <h2>
+            Register
+          </h2>
+          <form onSubmit={this.submit}>
+            <div className='form-group'>
+              <input placeholder='username' className='form-control' type="text" value={this.state.username}
+                     onChange={(e) => {
+                       this.setState({
+                         username: e.target.value,
+                       })
+                     }}/>
+              <small className='form-text text-muted text-danger'>{this.state.error.usernameError}</small>
+            </div>
 
-      <div>
-        <Form
-          onValid={this.isValid}
-          onInvalid={this.isInvalid}
-          onValidSubmit={this.submit}
-        >
+            <div className='form-group'>
+              <input placeholder='password' className='form-control' type="password" value={this.state.password}
+                     onChange={(e) => {
+                       this.setState({
+                         password: e.target.value,
+                       })
+                     }}/>
+            </div>
 
-          <Input name='username' label='username' help='enter your username' validations="isUnique" validationErrors="username exists" required/>
-          <Input name='password' type='password' label='password' help='enter your password' validations="minLength:5" validationError='password too short' required/>
-          <Input name='pass_confirm' type='password' label='confirm password' help='confirm your password' validations='equalsField:password' validationError='password does not match' required/>
-          <button type='submit' disabled={!this.state.valid}>Login</button>
+            <div className='form-group'>
+              <input placeholder='confirm password' className='form-control' type="password" value={this.state.passConfirm}
+                     onChange={(e) => {
+                       this.setState({
+                         passConfirm: e.target.value,
+                       })
+                     }}/>
+            </div>
 
-          {/* debugging purposes */}
-          <span>{this.state.message}</span>
-        </Form>
-      </div>);
+            <button className='btn btn-primary' type="submit">
+              Register
+            </button>
+          </form>
+        </div>
+      </div>)
   }
 }
-export default RegisterForm;
+
+export default RegisterForm

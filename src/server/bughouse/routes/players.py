@@ -3,11 +3,8 @@ import logging
 from bughouse.models import Player
 from bughouse.models.player import PlayerSchema
 from flask import request, make_response, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 import bughouse.utils as utils
-from bughouse.utils import player_schema
-from sqlalchemy.exc import IntegrityError
-import bughouse.settings as settings
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,3 +22,8 @@ def view_player(player_id):
 def view_all_players():
     players = Player.query.all()
     return jsonify(PlayerSchema(many=True).dump(players).data)
+
+
+@app.context_processor
+def inject_current_user():
+    return dict(user=PlayerSchema().dump(current_user))

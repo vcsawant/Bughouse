@@ -31,7 +31,7 @@ class Game(db.Model):
     player_black_a = db.relationship('Player', foreign_keys=[player_black_a_id])
     player_black_b = db.relationship('Player', foreign_keys=[player_black_b_id])
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    result = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.Integer, default=constants.GameStatus.WAITING_FOR_PLAYERS.value, nullable=False)
 
     def __init__(self, **kwargs):
         super(Game, self).__init__(**kwargs)
@@ -64,14 +64,14 @@ class Game(db.Model):
         team_b.append(self.player_white_b)
         team_b.append(self.player_black_b)
 
-        if result_code == constants.GameResult.WHITE_WIN:
+        if result_code == constants.GameStatus.WHITE_WIN:
             winners = team_a
             losers = team_b
         else:
             winners = team_b
             losers = team_a
 
-        self.result = result_code
+        self.status = result_code
         for player in winners:
             player.update_result(constants.PlayerResult.WIN)
         for player in losers:
@@ -79,11 +79,11 @@ class Game(db.Model):
 
         # TODO: handle draw or other result codes in future
 
-    def make_move(self, custom_move):
-        if custom_move.board_code == constants.BoardCode.BOARD_A:
-            self.board_a.move(custom_move.move)
+    def make_move(self, move):
+        if move.board_code == constants.BoardCode.BOARD_A:
+            self.board_a.move(move.move)
         else:
-            self.board_b.move(custom_move.move)
+            self.board_b.move(move.move)
 
     def validate_move(self, custom_move):
         if custom_move.board_code == 0:
@@ -97,7 +97,7 @@ class GameSchema(ModelSchema):
         model = Game
 
 
-class CustomMove:
+class BughouseMove:
     def __init__(self, board_code, move):
         self.board_code = board_code
         self.move = move

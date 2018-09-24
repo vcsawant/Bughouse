@@ -1,4 +1,7 @@
-tr:nth-child(even) {
-    background-color: transparent;
+table{
+    padding: 10px;
 }
 
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
